@@ -1,9 +1,12 @@
 package main
 
 import (
-	"log"
+	"os"
+
+	"go.uber.org/zap"
 
 	config "github.com/BMSTU-bots/vk-bmstu-schedule-bot/config"
+	logger "github.com/BMSTU-bots/vk-bmstu-schedule-bot/logger"
 	vkapi "github.com/dimonchik0036/vk-api"
 )
 
@@ -12,24 +15,37 @@ var (
 )
 
 func msgHandler(fromID int64, text string) {
-	log.Printf("Handling new message from %d: %s", fromID, text)
-	bot.SendMessage(
-		vkapi.NewMessage(vkapi.NewDstFromUserID(fromID),
-			"👌",
-		))
+	logger.Instance.Info("[NEW MESSAGE]",
+		zap.Int64("FROM", fromID),
+		zap.String("TEXT", text),
+	)
+	file, err := os.Open("vault/schedule.ics")
+	if err != nil {
+		logger.Instance.Error(err.Error())
+	}
+
+	bot.SendDoc(
+		vkapi.NewDstFromUserID(fromID),
+		"schedule.ics",
+		vkapi.FileReader{
+			Reader: file,
+			Size:   -1,
+			Name:   file.Name(),
+		},
+	)
 }
 
 func main() {
 	var err error
 
 	if bot, err = vkapi.NewClientFromToken(config.Instance.AccessToken); err != nil {
-		log.Panic(err)
+		logger.Instance.Error(err.Error())
 	}
 
-	bot.Log(true)
+	bot.Log(config.Instance.BotLog)
 
 	if err := bot.InitLongPoll(0, 2); err != nil {
-		log.Panic(err)
+		logger.Instance.Error(err.Error())
 	}
 
 	LPCfg := vkapi.LPConfig{
@@ -38,7 +54,7 @@ func main() {
 	}
 	updates, _, err := bot.GetLPUpdatesChan(100, LPCfg)
 	if err != nil {
-		log.Panic(err)
+		logger.Instance.Error(err.Error())
 	}
 
 	var msg *vkapi.LPMessage

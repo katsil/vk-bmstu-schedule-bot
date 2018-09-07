@@ -9,6 +9,7 @@ import (
 // Config scheme struct for unmarshall
 type Config struct {
 	AccessToken string `json:"access_token"`
+	BotLog      bool   `json:"bot_log"`
 }
 
 // Instance of unmarshalled config file
