@@ -16,3 +16,6 @@ config.json
 
 # Binary files
 vk-bmstu-schedule-bot
+
+# Dev folders
+vault/
