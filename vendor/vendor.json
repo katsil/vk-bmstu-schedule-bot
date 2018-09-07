@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "qthFEk0PT6438Z/lAjokFGDpkWk=",
+			"path": "github.com/dimonchik0036/vk-api",
+			"revision": "d1cebfe3b2103ad46b12609fef10467c4a33419a",
+			"revisionTime": "2018-03-24T13:53:36Z"
+		},
+		{
+			"checksumSHA1": "mYrkYI/2iFOlfvPzsjYIKO8KUGY=",
+			"path": "github.com/technoweenie/multipartstreamer",
+			"revision": "a90a01d73ae432e2611d178c18367fbaa13e0154",
+			"revisionTime": "2013-10-20T00:18:33Z"
+		}
+	],
+	"rootPath": "github.com/BMSTU-bots/vk-bmstu-schedule-bot"
+}
