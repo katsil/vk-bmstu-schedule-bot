@@ -5,8 +5,8 @@ import (
 
 	"go.uber.org/zap"
 
-	config "github.com/BMSTU-bots/vk-bmstu-schedule-bot/config"
-	logger "github.com/BMSTU-bots/vk-bmstu-schedule-bot/logger"
+	"github.com/BMSTU-bots/vk-bmstu-schedule-bot/config"
+	"github.com/BMSTU-bots/vk-bmstu-schedule-bot/logger"
 	vkapi "github.com/dimonchik0036/vk-api"
 )
 
@@ -14,10 +14,10 @@ var (
 	bot *vkapi.Client
 )
 
-func msgHandler(fromID int64, text string) {
+func msgHandler(fromID int64, text *string) {
 	logger.Instance.Info("[NEW MESSAGE]",
 		zap.Int64("FROM", fromID),
-		zap.String("TEXT", text),
+		zap.String("TEXT", *text),
 	)
 	file, err := os.Open("vault/schedule.ics")
 	if err != nil {
@@ -65,6 +65,6 @@ func main() {
 		if msg == nil || !update.IsNewMessage() || msg.Outbox() {
 			continue
 		}
-		go msgHandler(msg.FromID, msg.Text)
+		go msgHandler(msg.FromID, &msg.Text)
 	}
 }
