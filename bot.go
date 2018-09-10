@@ -20,24 +20,43 @@ var (
 )
 
 func buildValidGroupID(groupID *string) (string, bool) {
-
-	if ok, _ := regexp.Match(`[а-яА-Я]{0,4}\d{0,2}\-\d{0,2}[а-яА-Я]?`, []byte(*groupID)); !ok {
+	if ok, _ := regexp.Match(`^[а-яА-Я]{0,4}\d{0,2}\-\d{0,2}[а-яА-Я]?$`, []byte(*groupID)); !ok {
 		return "", ok
 	}
-
-	upperGID := strings.ToUpper(*groupID)
-	if unicode.IsNumber(rune(upperGID[len(upperGID)-1])) {
-		upperGID += "Б"
-	}
-	return upperGID, true
+	return strings.ToUpper(*groupID), true
 }
 
 func parseSchedule(groupID *string) error {
-	cmd := exec.Command("bmstu-schedule", *groupID, "-o", "vault")
+	cmd := exec.Command("bmstu-schedule", *groupID, "-o", config.Instance.VaultPath)
 	logger.Instance.Debug("Running parser",
 		zap.String("GROUP", *groupID),
 	)
 	return cmd.Run()
+}
+
+func sendMessage(userID int64, text string) {
+	bot.SendMessage(
+		vkapi.NewMessage(
+			vkapi.NewDstFromUserID(userID),
+			text,
+		),
+	)
+}
+
+func sendNotFoundErrorMessage(userID int64, validGID string) {
+	var msg string
+	if unicode.IsNumber(rune(validGID[len(validGID)-1])) {
+		msg = fmt.Sprintf(
+			"Эээ, кажется, кто-то не уточнил "+
+				"тип своей группы (Б/М/А). "+
+				"Давай добавим соответствующую букву в "+
+				"конце и попробуем еще раз. Например %sБ", validGID)
+	} else {
+		msg = fmt.Sprintf(
+			"Чёт я ничего не нашел для группы %s. "+
+				"Если проблема и правда во мне, то напиши @gabolaev", validGID)
+	}
+	sendMessage(userID, msg)
 }
 
 func msgHandler(fromID int64, text *string) {
@@ -48,48 +67,37 @@ func msgHandler(fromID int64, text *string) {
 
 	validGID, ok := buildValidGroupID(text)
 	if !ok {
-		bot.SendMessage(
-			vkapi.NewMessage(
-				vkapi.NewDstFromUserID(fromID),
-				"Указан неверный формат номера группы.",
-			),
-		)
+		sendMessage(fromID, "Указан неверный формат номера группы.")
 		return
 	}
+
+	sendMessage(fromID, "Пошел искать расписание для группы "+validGID)
 
 	fileName := fmt.Sprintf("Расписание %s.ics", validGID)
-
-	file, err := os.Open("vault/" + fileName)
+	file, err := os.Open(config.Instance.VaultPath + fileName)
 	if err != nil && parseSchedule(&validGID) != nil {
-		groupCode := validGID[:len(validGID)-2]
-		fmt.Println(groupCode)
-		bot.SendMessage(
-			vkapi.NewMessage(
-				vkapi.NewDstFromUserID(fromID),
-				fmt.Sprintf(`Расписание для группы %s не найдено. 
-				Если вы не студент бакалавриата, укажите, пожалуйста, 
-				тип группы путём добавления соответствующей буквы
-				Например %sМ`, validGID, groupCode),
-			),
-		)
+		sendNotFoundErrorMessage(fromID, validGID)
 		return
 	}
 
-	file, err = os.Open("vault/" + fileName)
+	file, err = os.Open(config.Instance.VaultPath + fileName)
 	if err != nil {
-		logger.Instance.Error(err.Error())
+		sendNotFoundErrorMessage(fromID, validGID)
 		return
 	}
 
 	bot.SendDoc(
 		vkapi.NewDstFromUserID(fromID),
-		validGID,
+		validGID+".ics",
 		vkapi.FileReader{
 			Reader: file,
 			Size:   -1,
 			Name:   file.Name(),
 		},
 	)
+	sendMessage(fromID, "Тадам!")
+	sendMessage(fromID, "Если вдруг будут проблемы при импорте "+
+		"в календарь, можешь обращаться к @gabolaev")
 }
 
 func main() {

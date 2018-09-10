@@ -10,6 +10,7 @@ import (
 type Config struct {
 	AccessToken string `json:"access_token"`
 	BotLog      bool   `json:"bot_log"`
+	VaultPath   string `json:"vault_path"`
 }
 
 // Instance of unmarshalled config file
