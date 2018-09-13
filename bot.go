@@ -20,7 +20,7 @@ var (
 )
 
 func buildValidGroupID(groupID *string) (string, bool) {
-	if ok, _ := regexp.Match(`^[а-яА-Я]{0,4}\d{0,2}\-\d{0,2}[а-яА-Я]?$`, []byte(*groupID)); !ok {
+	if ok, _ := regexp.Match(`^[а-яА-Я]{1,4}\d{0,2}\-\d{1,2}[а-яА-Я]?$`, []byte(*groupID)); !ok {
 		return "", ok
 	}
 	return strings.ToUpper(*groupID), true
