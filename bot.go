@@ -54,7 +54,7 @@ func sendNotFoundErrorMessage(userID int64, validGID string) {
 	} else {
 		msg = fmt.Sprintf(
 			"Чёт я ничего не нашел для группы %s. "+
-				"Если проблема и правда во мне, то напиши @gabolaev", validGID)
+				"Если проблема и правда во мне, то напиши @gabolaev или @lee_daniil", validGID)
 	}
 	sendMessage(userID, msg)
 }
@@ -97,7 +97,7 @@ func msgHandler(fromID int64, text *string) {
 	)
 	sendMessage(fromID, "Тадам!")
 	sendMessage(fromID, "Если вдруг будут проблемы при импорте "+
-		"в календарь, можешь обращаться к @gabolaev")
+		"в календарь, можешь обращаться к @gabolaev или @lee_daniil")
 }
 
 func main() {
