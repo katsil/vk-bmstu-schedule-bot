@@ -18,6 +18,7 @@ ENV GOROOT /usr/local/go
 ENV GOPATH /opt/go
 ENV PATH $GOROOT/bin:$GOPATH/bin:$PATH
 RUN mkdir -p "$GOPATH/bin" "$GOPATH/src"
+RUN go get -u github.com/golang/dep/cmd/dep
 
 # python installations
 RUN apt install -y python3 python3-pip
@@ -28,4 +29,5 @@ RUN pip3 install bmstu-schedule
 # bot moving
 ADD ./ $GOPATH/src/$REPO
 WORKDIR $GOPATH/src/$REPO
+RUN dep ensure
 RUN go build
